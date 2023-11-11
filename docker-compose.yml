@@ -6,7 +6,7 @@ services:
       - "${DONGURAMII_BACK_PORT}:8000"
     environment:
       - DONGURAMII_DJANGO_SECRET=${DONGURAMII_DJANGO_SECRET}
-      - API_OPEN_API_KEY=${API_OPEN_API_KEY}
+      - AREA_OPEN_API_KEY=${AREA_OPEN_API_KEY}
     command: ["/bin/sh", "-c", "./run.sh"]
     volumes:
       - .:/donguramii
