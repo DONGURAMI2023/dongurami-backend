@@ -26,14 +26,14 @@ SECRET_KEY = os.environ["DONGURAMII_DJANGO_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ec2-13-125-174-152.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['ec2-13-125-174-152.ap-northeast-2.compute.amazonaws.com', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'area.apps.AreaConfig',
-    'user.apps.UserConfig',
+    'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,6 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL='accounts.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
