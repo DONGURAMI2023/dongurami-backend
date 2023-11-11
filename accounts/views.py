@@ -141,3 +141,16 @@ class KakaoCallBackView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user_email = kakao_account.get('email')
         user_profile_image = kakao_account.get('properties').get('profile_image')
+        
+class ProfileAPIView(APIView):
+    def get(self, request, userId):
+        user = get_object_or_404(User, pk=userId)
+        serializer = UserSerializer(user)
+        return Response(
+            {
+                "user": serializer.data,
+                "message": "profile success",
+            },
+            status=status.HTTP_200_OK,
+        )
+    
