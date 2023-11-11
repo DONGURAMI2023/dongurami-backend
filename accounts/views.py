@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.shortcuts import render, get_object_or_404
 from donguramii.settings import SECRET_KEY
+from area.serializers import AreaSerializer
 
 import os
 
@@ -151,12 +152,14 @@ class ProfileAPIView(APIView):
         item_serializer = ItemSerializer(items, many=True)
         badges = user.badge.all()
         badge_serializer = BadgeSerializer(badges, many=True)
+        areas = User.objects.prefetch_related('area_set').get(id=userId).area_set.all().values()
         return Response(
             {
                 "user": user_serializer.data,
                 "items": item_serializer.data,
                 "badges": badge_serializer.data,
                 "message": "profile success",
+                "areas": list(areas)
             },
             status=status.HTTP_200_OK,
         )
