@@ -165,5 +165,9 @@ class ActivateAPIView(APIView):
     def delete(self, request, userId, itemId):
         user = get_object_or_404(User, pk=userId)
         item = get_object_or_404(Item, pk=itemId)
+        
+        if item not in user.item.all():
+            return Response({"message": "item not found"}, status=status.HTTP_400_BAD_REQUEST)
+        
         user.item.remove(item)
         return Response({"message": "item delete success"}, status=status.HTTP_200_OK)
