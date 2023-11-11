@@ -34,7 +34,7 @@ class RegisterAPIView(APIView):
             return res
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class AuthAPIView(APIView):
+class LoginAPIView(APIView):
     def get(self, request):
         try:
             access = request.COOKIES['access']
@@ -88,10 +88,14 @@ class AuthAPIView(APIView):
             return res
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request):
+    
+class LogoutAPIView(APIView):
+    def post(self, request):
+        user = request.user
+        token = TokenObtainPairSerializer.get_token(user)
         response = Response({
-            "message": "Logout success"
+            "message": "Logout success",
+            "token": str(token)
             }, status=status.HTTP_202_ACCEPTED)
         response.delete_cookie("access")
         response.delete_cookie("refresh")
