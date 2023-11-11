@@ -1,41 +1,34 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.contrib import auth
-from django.views.generic import CreateView
-from accounts.forms import SignupForm
+from rest_framework.views import APIView
+from .serializers import *
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import status
+from rest_framework.response import Response
 
-
-class SignupView(CreateView):
-    form_class = SignupForm
-    template_name = 'signup.html'
-    success_url = 'login/'
-
-def signup(request):
-    if request.method == 'POST':
-        if request.POST['password'] == request.POST['confirm']:
-            user = User.objects.create_user(username=request.POST['username'], password=request.POST['password'])
-            auth.login(request, user)
-            return redirect('/')
-    return render(request, 'signup.html')
-
-def login(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-
-        user = auth.authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            auth.login(request, user)
-            return redirect('/')
-        else:
-            return render(request, 'login.html', {'error' : 'username or password is incorrect.'})
-    else:
-        return render(request, 'login.html')
-
-def logout(request):
-    if request.method == 'POST':
-        auth.logout(request)
-        return redirect('/')
-
-    return render(request, 'login.html')
+class RegisterAPIView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            
+            # jwt 토큰 접근
+            token = TokenObtainPairSerializer.get_token(user)
+            refresh_token = str(token)
+            access_token = str(token.access_token)
+            res = Response(
+                {
+                    "user": serializer.data,
+                    "message": "register successs",
+                    "token": {
+                        "access": access_token,
+                        "refresh": refresh_token,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+            
+            # jwt 토큰 => 쿠키에 저장
+            res.set_cookie("access", access_token, httponly=True)
+            res.set_cookie("refresh", refresh_token, httponly=True)
+            
+            return res
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
