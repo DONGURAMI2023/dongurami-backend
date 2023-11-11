@@ -140,3 +140,4 @@ class KakaoCallBackView(APIView):
         if not kakao_account:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user_email = kakao_account.get('email')
+        user_profile_image = kakao_account.get('properties').get('profile_image')
