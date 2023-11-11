@@ -26,7 +26,7 @@ SECRET_KEY = os.environ["DONGURAMII_DJANGO_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ec2-13-125-174-152.ap-northeast-2.compute.amazonaws.com']
 
 
 # Application definition
