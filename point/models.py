@@ -9,3 +9,4 @@ class History(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     gain = models.IntegerField()
     total = models.IntegerField()
+    reason = models.CharField(max_length=100, default="")

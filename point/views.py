@@ -19,6 +19,19 @@ def get_user_histories(user_id, area_id=None):
     for i in range(len(ret)):
         ret[i]['area'] = AreaSerializer(instance=result[i].area).data
     return ret
+
+def get_user_total_point(user_id):
+    last = History.objects.filter(user_id=int(user_id)).order_by('created_at').last()
+    if last == None:
+        return 0
+    return last.total
+
+def modity_user_point(user_id, delta_point, area_id, reason=""):
+    total = get_user_total_point(user_id)
+    total += delta_point
+    new_history = History(user_id=user_id, area_id=area_id, gain=delta_point, total=total, reason=reason)
+    new_history.save()
+    return new_history
     
 class HistoryAPIView(APIView):
     def get(self, request, user_id, area_id):
@@ -31,15 +44,14 @@ class HistoryAPIView(APIView):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
-        last = History.objects.filter(user_id=int(user_id)).order_by('created_at').last()
-        print(HistorySerializer(instance=last).data)
-        total = 0
         gain = int(body['point'])
-        if last != None:
-            total += last.total + gain
+        
+        try:
+            reason = body['reason']
+        except KeyError:
+            reason = ""
 
-        new_history = History(user_id=user_id, area_id=area_id, gain=gain, total=total)
-        new_history.save()
+        new_history = modity_user_point(user_id, gain, area_id, reason)
         return Response({
             "message": "success",
             "result": HistorySerializer(instance=new_history).data
