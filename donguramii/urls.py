@@ -20,8 +20,8 @@ import accounts.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', accounts.views.login, name='login'),
-    path('signup/', accounts.views.SignupView.as_view(), name='signup'),
-    path('logout/', accounts.views.logout, name='logout'),
-    path('area/', include('area.urls'))
+    path('area/', include('area.urls')),
+    path('users/', accounts.views.RegisterAPIView.as_view()),
+    path('users/login', accounts.views.LoginAPIView.as_view()),
+    path('users/logout', accounts.views.LogoutAPIView.as_view()),
 ]
