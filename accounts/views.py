@@ -80,10 +80,7 @@ class LoginAPIView(APIView):
                 {
                     "user": serializer.data,
                     "message": "login success",
-                    "token": {
-                        "access": access_token,
-                        "refresh": refresh_token,
-                    },
+                    "token": refresh_token,
                 },
                 status=status.HTTP_200_OK,
             )
