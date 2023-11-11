@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import accounts.views
+import point.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +27,5 @@ urlpatterns = [
     path('users/logout', accounts.views.LogoutAPIView.as_view()),
     path('users/kakao/callback', accounts.views.KakaoCallBackView.as_view()),
     path('users/<int:userId>/profile', accounts.views.ProfileAPIView.as_view()),
+    path('users/<int:user_id>/point/<int:area_id>', point.views.HistoryAPIView.as_view())
 ]
