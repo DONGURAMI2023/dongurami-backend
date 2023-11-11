@@ -24,4 +24,5 @@ urlpatterns = [
     path('users/', accounts.views.RegisterAPIView.as_view()),
     path('users/login', accounts.views.LoginAPIView.as_view()),
     path('users/logout', accounts.views.LogoutAPIView.as_view()),
+    path('users/kakao/callback', accounts.views.KakaoCallBackView.as_view()),
 ]

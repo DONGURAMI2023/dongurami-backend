@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate
 from django.shortcuts import render, get_object_or_404
 from donguramii.settings import SECRET_KEY
 
+import os
+
 class RegisterAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -100,3 +102,41 @@ class LogoutAPIView(APIView):
         response.delete_cookie("access")
         response.delete_cookie("refresh")
         return response
+    
+class KakaoCallBackView(APIView):
+    def get(self, request):
+        data = request.query_params.copy()
+
+        code = data.get('code')
+        if not code:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        request_data = {
+            "grant_type": "authorization_code",
+            "client_id": os.environ["KAKAO_REST_API_KEY"],
+            "redirect_uri": "http://localhost:8000/oauth/kakao/login/callback/",
+            "client_secret": '----',
+            "code": code,
+        }
+        
+        access_token = request.post("https://kauth.kakao.com/oauth/token", data=data).json()["access_token"]
+        
+        if not access_token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        access_token = f"Bearer {access_token}"
+        
+        auth_headers = {
+            "Authorization": access_token,
+            "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        }
+        
+        user_info_res = requests.get("https://kapi.kakao.com/v2/user/me", headers=auth_headers)
+        user_info_json = user_info_res.json()
+
+        social_type = 'kakao'
+        social_id = f"{social_type}_{user_info_json.get('id')}"
+
+        kakao_account = user_info_json.get('kakao_account')
+        if not kakao_account:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        user_email = kakao_account.get('email')
