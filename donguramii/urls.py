@@ -23,5 +23,7 @@ urlpatterns = [
     path('login/', accounts.views.login, name='login'),
     path('signup/', accounts.views.SignupView.as_view(), name='signup'),
     path('logout/', accounts.views.logout, name='logout'),
-    path('area/', include('area.urls'))
+    path('area/', include('area.urls')),
+    path('register/', accounts.views.RegisterAPIView.as_view()),
+    path('auth/', accounts.views.AuthAPIView.as_view()),
 ]
