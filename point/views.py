@@ -28,15 +28,19 @@ class HistoryAPIView(APIView):
         }, status=status.HTTP_200_OK)
     
     def post(self, request, user_id, area_id):
-        last = History.objects.filter(user_id=user_id).order_by('created_at').first()
-        total = 0
-        if last != None:
-            total += last.total
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        new_history = History(user_id=user_id, area_id=area_id, gain=int(body['point']), total=total)
+
+        last = History.objects.filter(user_id=int(user_id)).order_by('created_at').last()
+        print(HistorySerializer(instance=last).data)
+        total = 0
+        gain = int(body['point'])
+        if last != None:
+            total += last.total + gain
+
+        new_history = History(user_id=user_id, area_id=area_id, gain=gain, total=total)
         new_history.save()
         return Response({
             "message": "success",
-            "result": HistorySerializer(instance=new_history.objects.all()).data
+            "result": HistorySerializer(instance=new_history).data
         }, status=status.HTTP_201_CREATED)
