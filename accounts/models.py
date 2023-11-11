@@ -3,19 +3,19 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # 헬퍼 클래스
 class UserManager(BaseUserManager):
-    def create_user(self, email, password, **kwargs):
-        if not email:
-            raise ValueError('Users must have an email address')
+    def create_user(self, username, password, **kwargs):
+        if not username:
+            raise ValueError('Users must have an username')
         user = self.model(
-            email=email,
+            username=username,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email=None, password=None, **extra_fields):
+    def create_superuser(self, username=None, password=None, **extra_fields):
         superuser = self.create_user(
-            email=email,
+            username=username,
             password=password,
         )
         
@@ -27,8 +27,7 @@ class UserManager(BaseUserManager):
         return superuser
 
 class User(AbstractBaseUser, PermissionsMixin):
-    
-    email = models.EmailField(max_length=30, unique=True, null=False, blank=False)
+    username = models.CharField(max_length=100, unique=True, null=False, blank=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -37,4 +36,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'

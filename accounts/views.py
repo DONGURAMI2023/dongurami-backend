@@ -68,7 +68,7 @@ class AuthAPIView(APIView):
 
     def post(self, request):
         user = authenticate(
-            email=request.data.get("email"), password=request.data.get("password")
+            username=request.data.get("username"), password=request.data.get("password")
         )
         if user is not None:
             serializer = UserSerializer(user)
