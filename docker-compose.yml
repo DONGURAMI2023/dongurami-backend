@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  donguramii-backend:
+    image: python:3.9
+    ports:
+      - "${DONGURAMII_BACK_PORT}:8000"
+    environment:
+      - DONGURAMII_DJANGO_SECRET=${DONGURAMII_DJANGO_SECRET}
+    command: ["/bin/sh", "-c", "./run.sh"]
+    volumes:
+      - .:/donguramii
+    working_dir: /donguramii
