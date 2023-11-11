@@ -147,19 +147,20 @@ class KakaoCallBackView(APIView):
 class ProfileAPIView(APIView):
     def get(self, request, userId):
         user = get_object_or_404(User, pk=userId)
-        user_serializer = UserSerializer(user)
-        items = user.item.all()
-        item_serializer = ItemSerializer(items, many=True)
-        badges = user.badge.all()
-        badge_serializer = BadgeSerializer(badges, many=True)
+        user_data = UserSerializer(user).data
         areas = User.objects.prefetch_related('area_set').get(id=userId).area_set.all().values()
+        items = user.item.all()
+        item_data = ItemSerializer(items, many=True, partial=True).data
+        badges = user.badge.all()
+        badge_data = BadgeSerializer(badges, many=True).data
+        
         return Response(
             {
-                "user": user_serializer.data,
-                "items": item_serializer.data,
-                "badges": badge_serializer.data,
+                "user": user_data,
+                "areas": list(areas),
+                "items": item_data,
+                "badges": badge_data,
                 "message": "profile success",
-                "areas": list(areas)
             },
             status=status.HTTP_200_OK,
         )
