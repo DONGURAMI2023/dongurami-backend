@@ -37,3 +37,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
+    
+class Badge(models.Model):
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False)
+    description = models.TextField()
+    image = models.ImageField(upload_to='accounts\images', blank=True, null=True)
+    user = models.ManyToManyField(User, related_name='badge', blank=True)
+    

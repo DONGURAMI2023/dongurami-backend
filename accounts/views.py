@@ -145,10 +145,13 @@ class KakaoCallBackView(APIView):
 class ProfileAPIView(APIView):
     def get(self, request, userId):
         user = get_object_or_404(User, pk=userId)
-        serializer = UserSerializer(user)
+        user_serializer = UserSerializer(user)
+        badges = user.badge.all()
+        badge_serializer = BadgeSerializer(badges, many=True)
         return Response(
             {
-                "user": serializer.data,
+                "user": user_serializer.data,
+                "badges": badge_serializer.data,
                 "message": "profile success",
             },
             status=status.HTTP_200_OK,
