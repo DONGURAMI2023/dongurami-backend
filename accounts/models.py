@@ -38,9 +38,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
     
+class Item(models.Model):
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False)
+    description = models.TextField()
+    image = models.ImageField(upload_to='accounts\images\item', blank=True, null=True)
+    user = models.ManyToManyField(User, related_name='item', blank=True)
+    
 class Badge(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False, blank=False)
     description = models.TextField()
-    image = models.ImageField(upload_to='accounts\images', blank=True, null=True)
+    image = models.ImageField(upload_to='accounts\images\badge', blank=True, null=True)
     user = models.ManyToManyField(User, related_name='badge', blank=True)
     
