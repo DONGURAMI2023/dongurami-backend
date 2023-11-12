@@ -78,7 +78,8 @@ class KakaoCallBackView(APIView):
         token = TokenObtainPairSerializer.get_token(user)
         access_token = str(token.access_token)
         request_data['token'] = access_token
-        request_data['point'] = get_user_total_point(UserSerializer(user).data.get('id'))
+        request_data['id'] = UserSerializer(user).data.get('id')
+        request_data['point'] = get_user_total_point(request_data['id'])
         return Response(request_data, status=status.HTTP_201_CREATED)
         
 class ProfileAPIView(APIView):
