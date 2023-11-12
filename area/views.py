@@ -11,17 +11,18 @@ from point.views import modity_user_point
 from .get_area_data import insert_demo_data
 from point.views import get_user_total_point
 from accounts.models import User
+from accounts.serializers import UserSerializer
 
 def get_area(request: HttpRequest):
     if request.method == 'GET':
-        all = Area.objects.all()
+        all = Area.objects.select_related('user').all()
         result = {
             'result': []
         }
         for i in all:
             result['result'].append({
                 'id': i.id,
-                'user': None,
+                'user': UserSerializer(i.user).data,
                 'price': i.price,
                 'building': i.building
             })
