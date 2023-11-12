@@ -1,15 +1,19 @@
-from django.shortcuts import render
 import json
-from rest_framework.views import APIView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from django.shortcuts import render, get_object_or_404
-from donguramii.settings import SECRET_KEY
+from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import (TokenObtainPairSerializer,
+                                                  TokenRefreshSerializer)
+
 from area.serializers import AreaSerializer
-from .serializers import HistorySerializer
+from donguramii.settings import SECRET_KEY
+
 from .models import History
+from .serializers import HistorySerializer
+
 
 def get_user_histories(user_id, area_id=None):
     result = History.objects.filter(user_id=int(user_id))
@@ -34,13 +38,14 @@ def modity_user_point(user_id, delta_point, area_id, reason=""):
     return new_history
     
 class HistoryAPIView(APIView):
-    def get(self, request, user_id, area_id):
+    def get(self, request, userId):
         return Response({
             "message": "success",
-            "result": get_user_histories(user_id, area_id)
+            "result": get_user_histories(userId)
         }, status=status.HTTP_200_OK)
-    
-    def post(self, request, user_id, area_id):
+
+class GetPointAPIView(APIView):
+    def post(self, request, userId, areaId):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
@@ -51,7 +56,7 @@ class HistoryAPIView(APIView):
         except KeyError:
             reason = ""
 
-        new_history = modity_user_point(user_id, gain, area_id, reason)
+        new_history = modity_user_point(userId, gain, areaId, reason)
         return Response({
             "message": "success",
             "result": HistorySerializer(instance=new_history).data

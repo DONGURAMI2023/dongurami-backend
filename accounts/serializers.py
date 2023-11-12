@@ -1,5 +1,7 @@
-from .models import User, Item, Badge
 from rest_framework import serializers
+
+from .models import Badge, Item, User
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
