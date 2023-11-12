@@ -42,7 +42,7 @@ def calculate_area_price(building: int, price: int):
     for i in range(4):
         if ((1<<i) & building) != 0:
             v = i
-    return price * (0.2*v+1)
+    return int(price * (0.2*v+1))
 
 class BuyAreaAPIView(APIView):
     def put(self, request, area_id, user_id):
