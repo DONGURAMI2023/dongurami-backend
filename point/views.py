@@ -43,7 +43,8 @@ class HistoryAPIView(APIView):
             "message": "success",
             "result": get_user_histories(user_id)
         }, status=status.HTTP_200_OK)
-    
+
+class GetPointAPIView(APIView):
     def post(self, request, user_id, area_id):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
