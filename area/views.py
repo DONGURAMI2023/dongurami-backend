@@ -36,7 +36,7 @@ def demo(request: HttpRequest):
         })
 
 def calculate_area_price(building: int, price: int):
-    if building == 4:
+    if building == 8:
         return -1
     v = 0
     for i in range(4):
