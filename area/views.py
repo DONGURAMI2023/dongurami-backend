@@ -34,13 +34,9 @@ def demo(request: HttpRequest):
         })
 
 def calculate_area_price(building: int, price: int):
-    result = price
-    if (building & (1 << 3)) != 0:
-        raise ValueError
-    for i in range(3):
-        if (building & (1 << i)) != 0:
-            result += price + (i+1)*100
-    return result
+    if building == 4:
+        return -1
+    return price * (building*0.2+1)
 
 class BuyAreaAPIView(APIView):
     def put(self, request, area_id, user_id):
@@ -50,7 +46,7 @@ class BuyAreaAPIView(APIView):
             return Response({"result": "fail", "message": "your area"}, status=status.HTTP_409_CONFLICT)
         price = calculate_area_price(area.building, area.price)
         if area.user != None:
-            price *= 1.5
+            price *= 1.2
         if price == -1:
             return Response({"result": "fail", "message": "already exist landmark"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         if point < price:
