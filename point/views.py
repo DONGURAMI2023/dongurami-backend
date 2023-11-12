@@ -38,14 +38,14 @@ def modity_user_point(user_id, delta_point, area_id, reason=""):
     return new_history
     
 class HistoryAPIView(APIView):
-    def get(self, request, user_id):
+    def get(self, request, userId):
         return Response({
             "message": "success",
-            "result": get_user_histories(user_id)
+            "result": get_user_histories(userId)
         }, status=status.HTTP_200_OK)
 
 class GetPointAPIView(APIView):
-    def post(self, request, user_id, area_id):
+    def post(self, request, userId, areaId):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
@@ -56,7 +56,7 @@ class GetPointAPIView(APIView):
         except KeyError:
             reason = ""
 
-        new_history = modity_user_point(user_id, gain, area_id, reason)
+        new_history = modity_user_point(userId, gain, areaId, reason)
         return Response({
             "message": "success",
             "result": HistorySerializer(instance=new_history).data

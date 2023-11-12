@@ -27,6 +27,6 @@ urlpatterns = [
     path('users/kakao/callback', accounts.views.KakaoCallBackView.as_view()),
     path('users/<int:userId>/profile', accounts.views.ProfileAPIView.as_view()),
     path('users/<int:userId>/point', point.views.HistoryAPIView.as_view()),
-    path('users/<int:userId>/pont/<int:areaId>', point.views.GetPointAPIView.as_view()),
+    path('users/<int:userId>/point/<int:areaId>', point.views.GetPointAPIView.as_view()),
     path('users/<int:userId>/activate/<int:itemId>', accounts.views.ActivateAPIView.as_view()),
 ]
