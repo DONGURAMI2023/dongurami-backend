@@ -101,6 +101,7 @@ class ProfileAPIView(APIView):
                 "areas": list(areas),
                 "items": item_data,
                 "badges": badge_data,
+                "point": get_user_total_point(userId),
                 "message": "profile success",
             },
             status=status.HTTP_200_OK,
