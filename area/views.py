@@ -23,7 +23,7 @@ def get_area(request: HttpRequest):
         for i in all:
             result['result'].append({
                 'id': i.id,
-                'user': UserSerializer(i.user).data,
+                'user': None if i.user == None else UserSerializer(i.user).data,
                 'price': i.price,
                 'building': i.building
             })
