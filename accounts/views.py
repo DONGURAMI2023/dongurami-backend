@@ -1,4 +1,5 @@
 import jwt
+import requests
 from rest_framework.views import APIView
 from .serializers import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
@@ -7,88 +8,12 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.shortcuts import render, get_object_or_404
 from donguramii.settings import SECRET_KEY
+from area.serializers import AreaSerializer
+from django.shortcuts import redirect
 
-class RegisterAPIView(APIView):
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            
-            # jwt 토큰 접근
-            token = TokenObtainPairSerializer.get_token(user)
-            refresh_token = str(token)
-            access_token = str(token.access_token)
-            res = Response(
-                {
-                    "user": serializer.data,
-                    "message": "register successs",
-                    "token": refresh_token,
-                },
-                status=status.HTTP_200_OK,
-            )
-            
-            # jwt 토큰 => 쿠키에 저장
-            res.set_cookie("access", access_token, httponly=True)
-            res.set_cookie("refresh", refresh_token, httponly=True)
-            
-            return res
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class LoginAPIView(APIView):
-    def get(self, request):
-        try:
-            access = request.COOKIES['access']
-            payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
-            pk = payload.get('user_id')
-            user = get_object_or_404(User, pk=pk)
-            serializer = UserSerializer(instance=user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+import os
+import json
 
-        except(jwt.exceptions.ExpiredSignatureError):
-            data = {'refresh': request.COOKIES.get('refresh', None)}
-            serializer = TokenRefreshSerializer(data=data)
-            if serializer.is_valid(raise_exception=True):
-                access = serializer.data.get('access', None)
-                refresh = serializer.data.get('refresh', None)
-                payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
-                pk = payload.get('user_id')
-                user = get_object_or_404(User, pk=pk)
-                serializer = UserSerializer(instance=user)
-                res = Response(serializer.data, status=status.HTTP_200_OK)
-                res.set_cookie('access', access)
-                res.set_cookie('refresh', refresh)
-                return res
-            raise jwt.exceptions.InvalidTokenError
-
-        except(jwt.exceptions.InvalidTokenError):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self, request):
-        user = authenticate(
-            username=request.data.get("username"), password=request.data.get("password")
-        )
-        if user is not None:
-            serializer = UserSerializer(user)
-            token = TokenObtainPairSerializer.get_token(user)
-            refresh_token = str(token)
-            access_token = str(token.access_token)
-            res = Response(
-                {
-                    "user": serializer.data,
-                    "message": "login success",
-                    "token": {
-                        "access": access_token,
-                        "refresh": refresh_token,
-                    },
-                },
-                status=status.HTTP_200_OK,
-            )
-            res.set_cookie("access", access_token, httponly=True)
-            res.set_cookie("refresh", refresh_token, httponly=True)
-            return res
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-    
 class LogoutAPIView(APIView):
     def post(self, request):
         user = request.user
@@ -97,6 +22,92 @@ class LogoutAPIView(APIView):
             "message": "Logout success",
             "token": str(token)
             }, status=status.HTTP_202_ACCEPTED)
-        response.delete_cookie("access")
-        response.delete_cookie("refresh")
         return response
+    
+class KakaoCallBackView(APIView):
+    def get(self, request):
+        code = request.GET["code"]
+
+        if not code:
+            print("not code")
+            return Response({"message": "not code"}, status=status.HTTP_400_BAD_REQUEST)
+
+        request_data = {
+            "grant_type": "authorization_code",
+            "client_id": os.environ["KAKAO_REST_API_KEY"],
+            "redirect_uri": "http://localhost:5173/login/oauth",
+            "client_secret": os.environ["KAKAO_CLIENT_SECRET"],
+            "code": code,
+        }
+        
+        access_token = requests.post("https://kauth.kakao.com/oauth/token", data=request_data).json().get("access_token")
+        
+        if not access_token:
+            return Response({"message": "not access token"},status=status.HTTP_400_BAD_REQUEST)
+        access_token = f"Bearer {access_token}"
+        
+        auth_headers = {
+            "Authorization": access_token,
+            "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        }
+        
+        user_info_res = requests.get("https://kapi.kakao.com/v2/user/me", headers=auth_headers)
+        user_info_json = user_info_res.json()
+
+        social_type = 'kakao'
+        social_id = f"{social_type}_{user_info_json.get('id')}"
+
+        kakao_account = user_info_json.get('kakao_account')
+        if not kakao_account:
+            return Response({"message": "not kakao account"},status=status.HTTP_400_BAD_REQUEST)
+        
+        username = kakao_account.get('profile').get('nickname')
+        user_email = kakao_account.get('email')
+        user_profile_image = user_info_json.get('properties').get('profile_image')
+        request_data = {
+            "email": user_email,
+            "username": username,
+            "profile_image": user_profile_image,
+        }
+
+        if not User.objects.filter(email=user_email).exists():
+            User.save(User(email=user_email, username=username, profile_image=user_profile_image))
+        
+        user = User.objects.get(email=user_email)
+        token = TokenObtainPairSerializer.get_token(user)
+        access_token = str(token.access_token)
+        request_data['token'] = access_token
+
+        return Response(request_data, status=status.HTTP_201_CREATED)
+        
+class ProfileAPIView(APIView):
+    def get(self, request, userId):
+        user = get_object_or_404(User, pk=userId)
+        user_data = UserSerializer(user).data
+        areas = User.objects.prefetch_related('area_set').get(id=userId).area_set.all().values()
+        items = user.item.all()
+        item_data = ItemSerializer(items, many=True, partial=True).data
+        badges = user.badge.all()
+        badge_data = BadgeSerializer(badges, many=True).data
+        
+        return Response(
+            {
+                "user": user_data,
+                "areas": list(areas),
+                "items": item_data,
+                "badges": badge_data,
+                "message": "profile success",
+            },
+            status=status.HTTP_200_OK,
+        )
+        
+class ActivateAPIView(APIView):
+    def delete(self, request, userId, itemId):
+        user = get_object_or_404(User, pk=userId)
+        item = get_object_or_404(Item, pk=itemId)
+        
+        if item not in user.item.all():
+            return Response({"message": "item not found"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.item.remove(item)
+        return Response({"message": "item delete success"}, status=status.HTTP_200_OK)

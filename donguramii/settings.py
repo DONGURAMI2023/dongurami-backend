@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework', 
     'rest_framework_simplejwt',
-    'corsheaders'
+    'point.apps.PointConfig'
 ]
 
 AUTH_USER_MODEL='accounts.User'
@@ -92,6 +92,8 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+    'middleware.middleware.CorsMiddleware',
+    'middleware.middleware.jwt_middleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,8 +101,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'accounts.middleware.jwt_middleware',
 ]
 
 ROOT_URLCONF = 'donguramii.urls'
