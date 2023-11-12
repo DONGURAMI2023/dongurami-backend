@@ -15,7 +15,9 @@ from point.views import get_user_total_point, modity_user_point
 
 from .get_area_data import insert_demo_data
 from .models import Area
-
+import smtplib
+from email.message import EmailMessage
+import os
 
 def get_area(request: HttpRequest):
     if request.method == 'GET':
@@ -46,6 +48,26 @@ def calculate_area_price(building: int, price: int):
     print(v)
     return int(price * (0.2*v+1))
 
+def mail_to_owner(owner_email):
+    SMTP_SERVER = 'smtp.gmail.com'
+    SMTP_PORT = 465
+
+    smtp = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+
+    EMAIL_ADDR = os.environ['CITYMARBLE_EMAIL']
+    EMAIL_PASSWORD = os.environ['CITYMARBLE_EMAIL_PASSWORD']
+
+    smtp.login(EMAIL_ADDR, EMAIL_PASSWORD)
+
+    message = EmailMessage()
+    message.set_content('지금바로 접속! point 지급!')
+    message["Subject"] = "[City Marble] 다른 사람이 땅을 인수하려고 합니다."
+    message["From"] = EMAIL_ADDR
+    message["To"] = owner_email
+
+    smtp.send_message(message)
+    smtp.quit()
+
 class BuyAreaAPIView(APIView):
     def put(self, request, area_id, user_id):
         body_unicode = request.body.decode('utf-8')
@@ -69,6 +91,8 @@ class BuyAreaAPIView(APIView):
         modity_user_point(user_id, -price, area_id, "지역 구매")
         if area.user == None:
             area.building = building
+        else:
+            mail_to_owner(area.user.email)
         area.user = User.objects.get(id=user_id)
         area.save()
         return Response({
