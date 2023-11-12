@@ -9,6 +9,8 @@ services:
       - AREA_OPEN_API_KEY=${AREA_OPEN_API_KEY}
       - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
       - KAKAO_REST_API_KEY=${KAKAO_REST_API_KEY}
+      - CITYMARBLE_EMAIL=${CITYMARBLE_EMAIL}
+      - CITYMARBLE_EMAIL_PASSWORD=${CITYMARBLE_EMAIL_PASSWORD}
     command: ["/bin/sh", "-c", "./run.sh"]
     volumes:
       - .:/donguramii
