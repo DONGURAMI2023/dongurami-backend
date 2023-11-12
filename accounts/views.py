@@ -10,6 +10,7 @@ from django.shortcuts import render, get_object_or_404
 from donguramii.settings import SECRET_KEY
 from area.serializers import AreaSerializer
 from django.shortcuts import redirect
+from point.views import get_user_total_point
 
 import os
 import json
@@ -77,7 +78,7 @@ class KakaoCallBackView(APIView):
         token = TokenObtainPairSerializer.get_token(user)
         access_token = str(token.access_token)
         request_data['token'] = access_token
-
+        request_data['point'] = get_user_total_point()
         return Response(request_data, status=status.HTTP_201_CREATED)
         
 class ProfileAPIView(APIView):
