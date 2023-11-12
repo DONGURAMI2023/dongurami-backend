@@ -3,20 +3,24 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # 헬퍼 클래스
 class UserManager(BaseUserManager):
-    def create_user(self, username, password, **kwargs):
-        if not username:
-            raise ValueError('Users must have an username')
+    def create_user(self, email, username, password, profile_image, **kwargs):
+        if not email:
+            raise ValueError('Users must have an email address')
         user = self.model(
+            email=email,
             username=username,
+            profile_image=profile_image,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username=None, password=None, **extra_fields):
+    def create_superuser(self, email=None, username=None, password=None, profile_image=None, **extra_fields):
         superuser = self.create_user(
+            email=email,
             username=username,
             password=password,
+            profile_image=profile_image,
         )
         
         superuser.is_staff = True
@@ -27,7 +31,9 @@ class UserManager(BaseUserManager):
         return superuser
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=100, unique=True, null=False, blank=False)
+    email = models.EmailField(max_length=100, unique=True, null=False, blank=False)
+    username = models.CharField(max_length=100, null=False, blank=False)
+    profile_image = models.ImageField(upload_to='accounts\images\profile', blank=True, null=True)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -36,7 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     
 class Item(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False, blank=False)
