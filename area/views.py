@@ -39,34 +39,36 @@ def demo(request: HttpRequest):
         })
 
 def calculate_area_price(building: int, price: int):
-    if building == 8:
-        return -1
     v = 0
     for i in range(4):
         if ((1<<i) & building) != 0:
             v = i
+    print(v)
     return int(price * (0.2*v+1))
 
 class BuyAreaAPIView(APIView):
     def put(self, request, area_id, user_id):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        building = 0 if int(body['building']) == None else int(body['building'])
+        building = int(body['building'])
 
         point = get_user_total_point(user_id)
         area = Area.objects.get(id=area_id)
+        if area.user != None and building == 8:
+            return Response({"result": "fail", "message": "already exist landmark"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         
         price = calculate_area_price(building, area.price) if area.user == None else calculate_area_price(area.building, area.price)
         if area.user != None:
             price *= 1.2
-        if price == -1:
-            return Response({"result": "fail", "message": "already exist landmark"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            price = int(price)
         if point < price:
             return Response({"result": "fail", "message": "you need more point", "need": price - point}, status=status.HTTP_403_FORBIDDEN)
         if area.user != None and user_id == area.user.id:
             return Response({"result": "fail", "message": "your area"}, status=status.HTTP_409_CONFLICT)
         
         modity_user_point(user_id, -price, area_id, "지역 구매")
+        if area.user == None:
+            area.building = building
         area.user = User.objects.get(id=user_id)
         area.save()
         return Response({

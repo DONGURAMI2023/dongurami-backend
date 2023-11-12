@@ -38,10 +38,10 @@ def modity_user_point(user_id, delta_point, area_id, reason=""):
     return new_history
     
 class HistoryAPIView(APIView):
-    def get(self, request, user_id, area_id):
+    def get(self, request, user_id):
         return Response({
             "message": "success",
-            "result": get_user_histories(user_id, area_id)
+            "result": get_user_histories(user_id)
         }, status=status.HTTP_200_OK)
     
     def post(self, request, user_id, area_id):
