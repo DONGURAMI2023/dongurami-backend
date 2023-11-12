@@ -1,15 +1,19 @@
-from django.shortcuts import render
 import json
-from rest_framework.views import APIView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from django.shortcuts import render, get_object_or_404
-from donguramii.settings import SECRET_KEY
+from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import (TokenObtainPairSerializer,
+                                                  TokenRefreshSerializer)
+
 from area.serializers import AreaSerializer
-from .serializers import HistorySerializer
+from donguramii.settings import SECRET_KEY
+
 from .models import History
+from .serializers import HistorySerializer
+
 
 def get_user_histories(user_id, area_id=None):
     result = History.objects.filter(user_id=int(user_id))

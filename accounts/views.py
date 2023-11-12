@@ -1,19 +1,22 @@
+import json
+import os
+
 import jwt
 import requests
-from rest_framework.views import APIView
-from .serializers import *
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from django.shortcuts import render, get_object_or_404
-from donguramii.settings import SECRET_KEY
+from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import (TokenObtainPairSerializer,
+                                                  TokenRefreshSerializer)
+
 from area.serializers import AreaSerializer
-from django.shortcuts import redirect
+from donguramii.settings import SECRET_KEY
 from point.views import get_user_total_point
 
-import os
-import json
+from .serializers import *
+
 
 class LogoutAPIView(APIView):
     def post(self, request):

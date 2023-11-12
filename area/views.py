@@ -1,18 +1,21 @@
-from django.http import HttpResponse, HttpResponseRedirect, HttpRequest, JsonResponse
-from django.http import Http404
+import json
+
 from django.core import serializers
-from rest_framework import status
+from django.http import (Http404, HttpRequest, HttpResponse,
+                         HttpResponseRedirect, JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from .models import Area
-from rest_framework.views import APIView
+from rest_framework import status
 from rest_framework.response import Response
-from point.views import modity_user_point
-from .get_area_data import insert_demo_data
-import json
-from point.views import get_user_total_point
+from rest_framework.views import APIView
+
 from accounts.models import User
 from accounts.serializers import UserSerializer
+from point.views import get_user_total_point, modity_user_point
+
+from .get_area_data import insert_demo_data
+from .models import Area
+
 
 def get_area(request: HttpRequest):
     if request.method == 'GET':
