@@ -14,6 +14,14 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
     
+    def update(self, validated_data):
+        user = User.objects.update(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            profile_image = validated_data['profile_image']
+        )
+        return user
+    
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item

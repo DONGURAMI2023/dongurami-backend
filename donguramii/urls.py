@@ -22,8 +22,6 @@ import point.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('area/', include('area.urls')),
-    path('users/', accounts.views.RegisterAPIView.as_view()),
-    path('users/login', accounts.views.LoginAPIView.as_view()),
     path('users/logout', accounts.views.LogoutAPIView.as_view()),
     path('users/kakao/callback', accounts.views.KakaoCallBackView.as_view()),
     path('users/<int:userId>/profile', accounts.views.ProfileAPIView.as_view()),

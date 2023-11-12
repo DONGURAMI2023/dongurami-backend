@@ -14,41 +14,6 @@ from django.shortcuts import redirect
 import os
 import json
 
-class RegisterAPIView(APIView):
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.save()
-            user.set_password(request.data.get("password"))
-            user.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-    
-class LoginAPIView(APIView):
-    def post(self, request):
-        user = authenticate(
-            email=request.data.get("email"),
-            username=request.data.get("username"),
-            password=request.data.get("password"),
-        )
-        if user is not None:
-            serializer = UserSerializer(user)
-            token = TokenObtainPairSerializer.get_token(user)
-            refresh_token = str(token)
-            access_token = str(token.access_token)
-            res = Response(
-                {
-                    "user": serializer.data,
-                    "message": "login success",
-                    "token": access_token,
-                },
-                status=status.HTTP_200_OK,
-            )
-            return res
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-    
 class LogoutAPIView(APIView):
     def post(self, request):
         user = request.user
@@ -74,8 +39,6 @@ class KakaoCallBackView(APIView):
             "client_secret": os.environ["KAKAO_CLIENT_SECRET"],
             "code": code,
         }
-        print("request data")
-        print(request_data)
         
         access_token = requests.post("https://kauth.kakao.com/oauth/token", data=request_data).json().get("access_token")
         
@@ -106,12 +69,16 @@ class KakaoCallBackView(APIView):
             "username": username,
             "profile_image": user_profile_image,
         }
-        serializer = UserSerializer(data=request_data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.save()
-            user.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if not User.objects.filter(email=user_email).exists():
+            User.save(User(email=user_email, username=username, profile_image=user_profile_image))
+        
+        user = User.objects.get(email=user_email)
+        token = TokenObtainPairSerializer.get_token(user)
+        access_token = str(token.access_token)
+        request_data['token'] = access_token
+
+        return Response(request_data, status=status.HTTP_201_CREATED)
         
 class ProfileAPIView(APIView):
     def get(self, request, userId):
