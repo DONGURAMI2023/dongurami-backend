@@ -62,21 +62,25 @@ class LogoutAPIView(APIView):
 class KakaoCallBackView(APIView):
     def get(self, request):
         code = request.GET["code"]
+
         if not code:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            print("not code")
+            return Response({"message": "not code"}, status=status.HTTP_400_BAD_REQUEST)
 
         request_data = {
             "grant_type": "authorization_code",
             "client_id": os.environ["KAKAO_REST_API_KEY"],
-            "redirect_uri": "http://localhost:8000/oauth/kakao/login/callback/",
+            "redirect_uri": "http://localhost:5173/login/oauth",
             "client_secret": os.environ["KAKAO_CLIENT_SECRET"],
             "code": code,
         }
+        print("request data")
+        print(request_data)
         
-        access_token = request.post("https://kauth.kakao.com/oauth/token", data=data).json()["access_token"]
+        access_token = requests.post("https://kauth.kakao.com/oauth/token", data=request_data).json().get("access_token")
         
         if not access_token:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "not access token"},status=status.HTTP_400_BAD_REQUEST)
         access_token = f"Bearer {access_token}"
         
         auth_headers = {
@@ -92,13 +96,22 @@ class KakaoCallBackView(APIView):
 
         kakao_account = user_info_json.get('kakao_account')
         if not kakao_account:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "not kakao account"},status=status.HTTP_400_BAD_REQUEST)
         
         username = kakao_account.get('profile').get('nickname')
         user_email = kakao_account.get('email')
-        user_profile_image = kakao_account.get('properties').get('profile_image')
-        
-        return redirect(f"http://localhost:8000/users?username={username}&email={user_email}&profile_image={user_profile_image}")
+        user_profile_image = user_info_json.get('properties').get('profile_image')
+        request_data = {
+            "email": user_email,
+            "username": username,
+            "profile_image": user_profile_image,
+        }
+        serializer = UserSerializer(data=request_data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
+            user.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class ProfileAPIView(APIView):
     def get(self, request, userId):

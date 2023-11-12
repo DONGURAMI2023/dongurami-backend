@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # 헬퍼 클래스
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, password, profile_image, **kwargs):
+    def create_user(self, email, username, profile_image, **kwargs):
         if not email:
             raise ValueError('Users must have an email address')
         user = self.model(
@@ -11,7 +11,6 @@ class UserManager(BaseUserManager):
             username=username,
             profile_image=profile_image,
         )
-        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -33,7 +32,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=100, unique=True, null=False, blank=False)
     username = models.CharField(max_length=100, null=False, blank=False)
-    profile_image = models.ImageField(upload_to='accounts\images\profile', blank=True, null=True)
+    profile_image = models.CharField(max_length=400, null=True)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
